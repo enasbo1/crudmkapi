@@ -36,14 +36,13 @@ class Repository
     }
 
     /**
-     * @param object $params
+     * @param array $params
      * @param string $error
      * @throws Exception
      */
-    public function create(object $params, string $error = ""): void
+    public function create(array $params, string $error = ""): void
     {
-        $toquery = $this->modelType->toArray($params);
-        $this->post($this->modelName, $toquery);
+        $this->post($this->modelName, $params);
     }
 
     /**
@@ -66,11 +65,18 @@ class Repository
     /**
      * @throws Exception
      */
-    public function update(object $params, string $error = ""): bool|Exception
+    public function readActif(string $error = ""):array{
+        return $this->get($this->modelName, [], ["actif"=>true], $error);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function update(array $params, string $error = ""): bool|Exception
     {
-        if ($this->read($params->id)!=[]){
-            $toquery = $this->modelType->toArray($params);
-            return $this->update_abs($this->modelName, $toquery, ["id"=>$params->id], $error);
+        if ($this->read($params['id'])!=[]){
+            $this->update_abs($this->modelName, $params, ["id"=>$params['id']], $error);
+            return true;
         }
         else{
             $error = ($error == "") ? "$this->modelName instance not found: " : $error;
@@ -95,9 +101,9 @@ class Repository
     public function delete_abs(String $table, string $attribute, string $value, string $error = ""): void
     {
         try{
-            $q = 'DELETE FROM ' . strtoupper($table) . " WHERE  $1 = $2";
+            $q = 'DELETE FROM ' . strtoupper($table) . " WHERE  \"".$attribute."\" = $1";
             pg_prepare($this->connection, "", $q);
-            pg_execute($this->connection, "", array($attribute, $value));
+            pg_execute($this->connection, "", array($value));
         } catch (Exception $e) {
             $error = ($error == "") ? "$this->modelName instance delete failed: " : $error;
             throw new Exception($error . $e->getMessage(), 400);
@@ -113,25 +119,26 @@ class Repository
             $q = "UPDATE $table SET ";
             $i = 1;
             foreach ($updates as $col => $value) {
-                $q .= $col . " = '" . $value . "'";
+                $q .= $col . " = $" . $i;
                 if ($i < count($updates)) {
                     $q = $q . ",";
                 }
                 $i += 1;
             }
 
-            $i = 1;
+            $j = 1;
             foreach ($restrict as $key => $val) {
-                if ($i == 1) {
+                if ($j == 1) {
                     $q .= " WHERE ";
                 } else {
                     $q .= " AND ";
                 }
                 $q .= $key . ' = $' . $i;
                 $i+=1;
+                $j+=1;
             }
             pg_prepare($this->connection,"", $q);
-            return pg_execute($this->connection,"", $restrict);
+            return pg_execute($this->connection,"",$updates+$restrict);
         } catch (Exception $e) {
             $error = ($error == "") ? "$this->modelName instance update failed: " : $error;
             throw new Exception($error . $e->getMessage(), 400);
@@ -199,7 +206,7 @@ class Repository
                 } else {
                     $q .= " AND ";
                 }
-                $q .= $key . ' = $' . $i. "'";
+                $q .= $key . ' = $' . $i;
                 $i += 1;
             }
             pg_prepare($this->connection,"", $q);
@@ -210,5 +217,16 @@ class Repository
             throw new Exception($error . $e->getMessage(), 400);
         }
 
+    }
+
+    public function query(string $query, array $values, string $error=""){
+    try{
+        pg_prepare($this->connection,"", $query);
+        $elements = pg_execute($this->connection,"", $values);
+        return pg_fetch_all($elements);
+    }catch (Exception $e){
+        $error = ($error=="")?"$this->modelName instance get failed: ":$error;
+        throw new Exception($error . $e->getMessage(), 400);
+    }
     }
 }

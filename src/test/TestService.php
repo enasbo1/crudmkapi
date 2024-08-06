@@ -1,16 +1,16 @@
 <?php
-namespace {|{name}|};
+namespace test;
 
 use Exception;
 use shared\Service;
 
-include_once "{|{Name}|}Repository.php";
+include_once "TestRepository.php";
 
-class {|{Name}|}Service extends Service
+class TestService extends Service
 {
     public function __construct()
     {
-        parent::__construct(new {|{Name}|}ModelType());
+        parent::__construct(new TestModelType());
     }
 
     /**
@@ -18,16 +18,16 @@ class {|{Name}|}Service extends Service
      */
     public function getAll(): array
     {
-        $repo = new {|{Name}|}Repository();
+        $repo = new TestRepository();
 
-        ${|{name}|} = [];
-        $result = $repo->readAll("unable to find any {|{name}|}");
+        $test = [];
+        $result = $repo->readAll("unable to find any test");
 
         foreach($result as $row) {
-            ${|{name}|}[] = $row;
+            $test[] = $row;
         }
 
-        return ${|{name}|};
+        return $test;
     }
 
     /**
@@ -35,8 +35,8 @@ class {|{Name}|}Service extends Service
      */
     public function findById(int $id): array
     {
-        $repo = new {|{Name}|}Repository();
-        return $repo->read($id, "{|{name}|} not found");
+        $repo = new TestRepository();
+        return $repo->read($id, "test not found");
     }
 
     /**
@@ -44,9 +44,9 @@ class {|{Name}|}Service extends Service
      */
     public function save(object $input): void
     {
-        $repo = new {|{Name}|}Repository();
+        $repo = new TestRepository();
         $toquery = $this->modelType->isValidType($input);
-        $repo->create($toquery, "unable to create {|{name}|}");
+        $repo->create($toquery, "unable to create test");
     }
 
     /**
@@ -54,9 +54,9 @@ class {|{Name}|}Service extends Service
      */
     public function update(object $input): void
     {
-        $repo = new {|{Name}|}Repository();
+        $repo = new TestRepository();
         $toquery = $this->modelType->isValidType($input);
-        $repo->update($toquery, "unable to update {|{name}|}");
+        $repo->update($toquery, "unable to update test");
     }
 
     /**
@@ -64,7 +64,7 @@ class {|{Name}|}Service extends Service
      */
     public function delete(int $id): void
     {
-        $repo = new {|{Name}|}Repository();
+        $repo = new TestRepository();
         $repo->delete($id);
     }
 }

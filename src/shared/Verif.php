@@ -37,6 +37,8 @@ class Verif{
                 return Verif::post_int_inf($value, $arg);
             case ":e":
                 return Verif::post_str_equa($value, $arg);
+            case ":d":
+                return True;
             default:
                 return False;
         }
@@ -54,6 +56,8 @@ class Verif{
             case ":>":
                 return ' doit être plus grand que ' . $arg;
             case ":e":
+                return ' doit faire exatement ' . $arg . ' caractères';
+            case ":d":
                 return ' doit faire exatement ' . $arg . ' caractères';
             default:
                 return '';
@@ -75,17 +79,19 @@ class Verif{
         ];
         $type = explode(' ', $type);
         foreach ($type as $co) {
-            if ($co[0] == '!') {
-                if (!filter_var($value, $validate[$co])) {
-                    $msg = '"' . $name . '"' . $message[$co];
-                    return(["message"=>$msg, "id"=>$name]);
+            if (strlen($co)>0){
+                if ($co[0] == '!') {
+                    if (!filter_var($value, $validate[$co])) {
+                        $msg = '"' . $name . '"' . $message[$co];
+                        return(["message"=>$msg, "id"=>$name]);
+                    }
                 }
-            }
-            if ($co[0] == ':') {
-                $i = explode(',', $co);
-                if (!Verif::compare($value, $i[0], $i[1])) {
-                    $msg = '"' . $name . '"' . Verif::message($i[0], $i[1]);
-                    return(["message"=>$msg, "id"=>$name]);
+                if ($co[0] == ':') {
+                    $i = explode(',', $co);
+                    if (!Verif::compare($value, $i[0], $i[1])) {
+                        $msg = '"' . $name . '"' . Verif::message($i[0], $i[1]);
+                        return(["message"=>$msg, "id"=>$name]);
+                    }
                 }
             }
         }
@@ -95,7 +101,7 @@ class Verif{
     static function verification(array $values, array $form)
     {
         foreach ($form as $key => $type) {
-            if (empty($values[$key]) || !isset($values[$key])) {
+            if (!isset($values[$key]) || empty($values[$key])) {
                 if ($type[0] == "r") {
                     $msg = 'le champ "' . $key . '" doit être remplit';
                     return(["message"=>$msg, "id"=>$key]);
@@ -104,7 +110,11 @@ class Verif{
                     $values[$key] = "";
                 }
             }
-            return (Verif::dechiffre($values[$key], $type, $key));
+            $passed = Verif::dechiffre($values[$key], $type, $key);
+            if ($passed !="validated"){
+                return $passed ;
+            }
         }
+        return "validated";
     }
 }

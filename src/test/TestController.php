@@ -1,37 +1,37 @@
 <?php
-namespace {|{name}|};
+namespace test;
 use token\Privilege;
 use shared\CrudController;
 
-require_once '{|{Name}|}Service.php';
+require_once 'TestService.php';
 
 
 
-class {|{Name}|}Controller extends CrudController{
+class TestController extends CrudController{
     function get(array $id): void
     {
-        $request = new {|{Name}|}Service();
+        $request = new TestService();
         if ($id == []) {
-            ${|{name}|} = $request->getAll();
+            $test = $request->getAll();
         } else {
-            ${|{name}|} = $request->findById($id[0]);
+            $test = $request->findById($id[0]);
         }
-        echo json_encode(${|{name}|});
+        echo json_encode($test);
     }
 
     function post(array $id, object $input): void
     {
-        $request = new {|{Name}|}Service();
+        $request = new TestService();
 
         Privilege::admin();
         $request->save($input);
         http_response_code(201);
-        echo('{"message" : "{|{name}|} créé avec succès"}');
+        echo('{"message" : "test créé avec succès"}');
     }
 
     function patch(array $id, object $input): void
     {
-        $request = new {|{Name}|}Service();
+        $request = new TestService();
 
         Privilege::admin();
         $request->update($input);
@@ -39,7 +39,7 @@ class {|{Name}|}Controller extends CrudController{
 
     function delete(array $id): void
     {
-        $request = new {|{Name}|}Service();
+        $request = new TestService();
         Privilege::admin();
         $request->delete($id[0]);
     }
